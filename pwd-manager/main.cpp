@@ -5,6 +5,10 @@
 
 using namespace std;
 
+// --- simple master password plan --- 
+// Master Password + KDF (PBKDF2 with HMAC) = Encryption Key
+// Symmetric Cipher (AES) + Encryption Key --> Passwords = Encrypted vault.txt
+
 
 class FileWriter {
     private:
@@ -45,12 +49,11 @@ class FileWriter {
 };
 
 
-int main () {
+void managerLoop() {
     int opt;
     string pwd, tag, entry;
     FileWriter writer;
 
-    cout << "--- Password Manager ---";
     while (1) {
         cout << "\n\n1. Save passwords\n2. Read passwords\n3. Exit\n\n";
         cin >> opt;
@@ -58,9 +61,9 @@ int main () {
         switch (opt) {
             // Save passwords.
             case 1:
-            cout << "Type your tag: ";
+            cout << "Enter your tag: ";
             cin >> tag;
-            cout << "Type your password: ";
+            cout << "Enter your password: ";
             cin >> pwd;
 
             entry = tag + " : " + pwd;
@@ -76,12 +79,18 @@ int main () {
             // Exit.
             case 3:
             cout << "Exiting...";
-            return 0;
+            return;
 
             default:
             cout << "Invalid option.\n";
         }
     }
+}
+
+
+int main () {
+    cout << "--- Password Manager ---";
+    cout << "Enter your master password: ";
 
     return 0;
 }
