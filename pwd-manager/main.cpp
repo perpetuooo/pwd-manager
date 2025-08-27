@@ -90,7 +90,8 @@ void managerLoop() {
 
 int main () {
     cout << "--- Password Manager ---";
-    cout << "Enter your master password: ";
+    // cout << "Enter your master password: ";
+    managerLoop();
 
     return 0;
 }
