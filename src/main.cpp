@@ -1,13 +1,10 @@
 # include <iostream>
 # include <fstream>
 # include <filesystem>
+# include <sodium.h>
 # include <string>
 
 using namespace std;
-
-// --- simple master password plan --- 
-// Master Password + KDF (PBKDF2 with HMAC) = Encryption Key
-// Symmetric Cipher (AES) + Encryption Key --> Passwords = Encrypted vault.txt
 
 
 class FileWriter {
@@ -89,6 +86,8 @@ void managerLoop() {
 
 
 int main () {
+    if (sodium_init() == -1) return 1;
+
     cout << "--- Password Manager ---";
     // cout << "Enter your master password: ";
     managerLoop();

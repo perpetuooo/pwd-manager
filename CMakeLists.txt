@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(Password-Manager)
 
-add_executable(password_manager pwd-manager/main.cpp)
+add_executable(password_manager src/main.cpp)
 
 if(WIN32) # Windows + vcpkg
     find_package(unofficial-sodium CONFIG REQUIRED)
