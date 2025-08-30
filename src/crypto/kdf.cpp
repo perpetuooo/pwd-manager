@@ -1,8 +1,10 @@
-# include <sodium.h>
 # include <iostream>
+# include <string>
+# include <sodium.h>
+# include "kdf.hpp"
 
-int kdf() {
+using namespace std;
 
-
-    return 0;
+void deriveKey(const string& mpwd) {
+    
 }

@@ -1,55 +1,26 @@
 # include <iostream>
-# include <fstream>
-# include <filesystem>
 # include <sodium.h>
 # include <string>
+# include "files.hpp"
 
 using namespace std;
 
+int main () {
+    if (sodium_init() == -1) return 1;
 
-class FileWriter {
-    private:
-        fstream file;
-
-        bool fileExists(string& filename) {
-            return filesystem::exists(filename);
-        }
-    
-    public:
-        void readFile() {
-            string line;
-
-            file.open("vault.txt", ios::in);
-
-            if (!file.is_open()) {
-                throw runtime_error("Could not open vault.txt");
-            }
-            
-            cout << "--- Passwords ---\n";
-            while (getline(file, line)) {
-                cout << line << endl;
-            }
-
-            file.close();
-        }
-
-        void writeFile(string& data) {
-            file.open("vault.txt", ios::out | ios::app);
-
-            if (!file.is_open()) {
-                throw runtime_error("Could not open vault.txt");
-            }
-
-            file << data << endl;
-            file.close();
-        }
-};
-
-
-void managerLoop() {
     int opt;
-    string pwd, tag, entry;
+    string mpwd, pwd, tag, entry;
     FileWriter writer;
+    
+    // Master password not defined.
+    // if (!writer.fileExists("secrets.txt")) {
+    //     cout << "Create your master password: ";
+    //     cin >> mpwd;
+    // }
+
+
+    cout << "--- Password Manager ---";
+
 
     while (1) {
         cout << "\n\n1. Save passwords\n2. Read passwords\n3. Exit\n\n";
@@ -64,33 +35,24 @@ void managerLoop() {
             cin >> pwd;
 
             entry = tag + " : " + pwd;
-            writer.writeFile(entry);
+            writer.writeFile("vault.txt", entry);
             cout << "Password saved successfuly!";
             break;
 
             // Read passwords.
             case 2:
-            writer.readFile();
+            writer.readFile("vault.txt");
             break;
 
             // Exit.
             case 3:
             cout << "Exiting...";
-            return;
+            return 0;
 
             default:
             cout << "Invalid option.\n";
         }
     }
-}
-
-
-int main () {
-    if (sodium_init() == -1) return 1;
-
-    cout << "--- Password Manager ---";
-    // cout << "Enter your master password: ";
-    managerLoop();
 
     return 0;
 }
