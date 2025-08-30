@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 file(GLOB_RECURSE SOURCES CONFIGURE_DEPENDS src/*.cpp)
-add_executable(password_manager src/main.cpp)
+add_executable(password_manager ${SOURCES})
 
 if(WIN32) # Windows + vcpkg
     find_package(unofficial-sodium CONFIG REQUIRED)

@@ -1,44 +1,37 @@
-# include <iostream>
-# include <fstream>
-# include <filesystem>
-# include <string>
+#include <iostream>
+#include <filesystem>
+#include "utils/files.hpp"
 
 using namespace std;
 
-class FileWriter {
-    private:
-        fstream file;
+bool FileWriter::fileExists(const string& filename) {
+    return filesystem::exists(filename);
+}
 
-    public:
-        bool fileExists(string filename) {
-            return filesystem::exists(filename);
-        }
+void FileWriter::readFile(const string& filename) {
+    string line;
 
-        void readFile(string filename) {
-            string line;
+    file.open(filename, ios::in);
 
-            file.open(filename, ios::in);
+    if (!file.is_open()) {
+        throw runtime_error("Could not open " + filename);
+    }
 
-            if (!file.is_open()) {
-                throw runtime_error("Could not open " + filename);
-            }
-            
-            cout << "--- Passwords ---\n";
-            while (getline(file, line)) {
-                cout << line << endl;
-            }
+    cout << "--- Passwords ---\n";
+    while (getline(file, line)) {
+        cout << line << endl;
+    }
 
-            file.close();
-        }
+    file.close();
+}
 
-        void writeFile(string filename ,string& data) {
-            file.open(filename, ios::out | ios::app);
+void FileWriter::writeFile(const string& filename, const string& data) {
+    file.open(filename, ios::out | ios::app);
 
-            if (!file.is_open()) {
-                throw runtime_error("Could not open " + filename);
-            }
+    if (!file.is_open()) {
+        throw runtime_error("Could not open " + filename);
+    }
 
-            file << data << endl;
-            file.close();
-        }
-};
+    file << data << endl;
+    file.close();
+}
