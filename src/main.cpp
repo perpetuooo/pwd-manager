@@ -1,6 +1,7 @@
 # include <iostream>
 # include <sodium.h>
 # include <string>
+# include "crypto/crypto.hpp"
 # include "utils/utils.hpp"
 
 using namespace std;
@@ -16,11 +17,12 @@ int main () {
     // if (!writer.fileExists("secrets.txt")) {
     //     cout << "Create your master password: ";
     //     cin >> mpwd;
+
     // }
 
-
+    string test = "teste";
+    deriveKey(test);
     cout << "--- Password Manager ---";
-
 
     while (1) {
         cout << "\n\n1. Save passwords\n2. Read passwords\n3. Exit\n\n";
