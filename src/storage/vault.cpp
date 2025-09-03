@@ -1,14 +1,17 @@
-#include <iostream>
-#include <filesystem>
-#include "utils/files.hpp"
+# include <iostream>
+# include <fstream>
+# include <filesystem>
+# include "storage/vault.hpp"
 
 using namespace std;
 
-bool FileWriter::fileExists(const string& filename) {
+fstream Vault::file;
+
+bool Vault::fileExists(const string& filename) {
     return filesystem::exists(filename);
 }
 
-void FileWriter::readFile(const string& filename) {
+void Vault::readFile(const string& filename) {
     string line;
 
     file.open(filename, ios::in);
@@ -25,7 +28,7 @@ void FileWriter::readFile(const string& filename) {
     file.close();
 }
 
-void FileWriter::writeFile(const string& filename, const string& data) {
+void Vault::writeFile(const string& filename, const string& data) {
     file.open(filename, ios::out | ios::app);
 
     if (!file.is_open()) {
