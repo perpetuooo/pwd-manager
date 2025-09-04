@@ -2,8 +2,8 @@
 # include <string>
 # include <array>
 # include <sodium.h>
+
 # include "crypto/kdf.hpp"
-# include "storage/vault.hpp"
 
 
 std::string binToHex(const unsigned char* bin, size_t len) {
@@ -16,21 +16,6 @@ std::string binToHex(const unsigned char* bin, size_t len) {
     }
 
     return s;
-}
-
-
-std::array<unsigned char, crypto_pwhash_SALTBYTES> genSalt() {
-    std::array<unsigned char, crypto_pwhash_SALTBYTES> salt{};
-
-    // Generate salt.
-    randombytes_buf(salt.data(), salt.size());
-    std::cout << "\ngenerated salt: " + binToHex(salt.data(), salt.size()) << std::endl;
-
-    // Save generated salt
-    std::ofstream out("secrets.txt", std::ios::binary);
-    out.write(reinterpret_cast<const char*>(salt.data()), salt.size());
-    
-    return salt;
 }
 
 

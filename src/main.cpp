@@ -2,6 +2,7 @@
 # include <sodium.h>
 # include <string>
 # include <array>
+
 # include "crypto/crypto.hpp"
 # include "storage/vault.hpp"
 
@@ -15,16 +16,16 @@ int main () {
     std::cout << "--- Password Manager ---";
 
     // Master password not defined.
-    if (!Vault::fileExists("secrets.txt")) {    // <-- more verification needed
-        auto salt = genSalt();
+    if (!Vault::fileExists("salt.bin")) {    // <-- more verification needed
+        auto salt = Vault::genSalt();
 
-        std::cout << "Create your master password: ";
+        std::cout << "\nCreate your master password: ";
         std::cin >> mpwd;
         auto key = deriveKey(mpwd, salt);
 
     } else {
         auto salt = Vault::loadSalt();
-        std::cout << "Enter your master password: ";
+        std::cout << "\nEnter your master password: ";
         std::cin >> mpwd;
 
         // try to decrypt vault

@@ -43,4 +43,4 @@
 .vscode
 build
 vault.txt
-secrets.txt
+salt.bin
