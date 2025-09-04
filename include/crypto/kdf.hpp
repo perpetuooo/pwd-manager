@@ -2,8 +2,10 @@
 #define KDF_HPP
 
 # include <string>
-using namespace std;
+# include <sodium.h>
 
-void deriveKey(const string& mpwd);
+std::string binToHex(const unsigned char* bin, size_t len);
+std::array<unsigned char, crypto_pwhash_SALTBYTES> genSalt();
+std::array<unsigned char, crypto_box_SEEDBYTES> deriveKey(const std::string& mpwd, const std::array<unsigned char, crypto_pwhash_SALTBYTES>& salt);
 
 #endif

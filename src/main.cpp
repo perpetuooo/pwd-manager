@@ -1,8 +1,9 @@
 # include <iostream>
 # include <sodium.h>
 # include <string>
+# include <array>
 # include "crypto/crypto.hpp"
-# include "utils/utils.hpp"
+# include "storage/vault.hpp"
 
 using namespace std;
 
@@ -11,18 +12,25 @@ int main () {
 
     int opt;
     string mpwd, pwd, tag, entry;
-    FileWriter writer;
-    
-    // Master password not defined.
-    // if (!writer.fileExists("secrets.txt")) {
-    //     cout << "Create your master password: ";
-    //     cin >> mpwd;
 
-    // }
-
-    string test = "teste";
-    deriveKey(test);
     cout << "--- Password Manager ---";
+
+    // Master password not defined.
+    if (!Vault::fileExists("secrets.txt")) {    // <-- more verification needed
+        auto salt = genSalt();
+
+        cout << "Create your master password: ";
+        cin >> mpwd;
+        auto key = deriveKey(mpwd, salt);
+
+    } else {
+        // auto salt = Vault::loadFile("secrets.txt");
+        cout << "Enter your master password: ";
+        cin >> mpwd;
+
+        // try to decrypt vault
+        // auto key = deriveKey(mpwd, salt);
+    }
 
     while (1) {
         cout << "\n\n1. Save passwords\n2. Read passwords\n3. Exit\n\n";
@@ -37,13 +45,13 @@ int main () {
             cin >> pwd;
 
             entry = tag + " : " + pwd;
-            writer.writeFile("vault.txt", entry);
+            Vault::writeFile("vault.txt", entry);
             cout << "Password saved successfuly!";
             break;
 
             // Read passwords.
             case 2:
-            writer.readFile("vault.txt");
+            Vault::readFile("vault.txt");
             break;
 
             // Exit.

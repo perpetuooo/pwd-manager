@@ -1,7 +1,9 @@
 # include <iostream>
 # include <string>
+# include <array>
 # include <sodium.h>
 # include "crypto/kdf.hpp"
+# include "storage/vault.hpp"
 
 using namespace std;
 
@@ -17,25 +19,35 @@ string binToHex(const unsigned char* bin, size_t len) {
     return s;
 }
 
-void deriveKey(const string& mpwd) {
-    unsigned char key[crypto_box_SEEDBYTES];
-    unsigned char salt[crypto_pwhash_SALTBYTES];
 
-    // Generate random bytes for salt.
-    randombytes_buf(salt, sizeof salt);
-    cout << "salt: " + binToHex(salt, sizeof salt) << endl;
+array<unsigned char, crypto_pwhash_SALTBYTES> genSalt() {
+    std::array<unsigned char, crypto_pwhash_SALTBYTES> salt{};
+
+    // Generate salt.
+    randombytes_buf(salt.data(), salt.size());
+    cout << "salt: " + binToHex(salt.data(), salt.size()) << endl;
+
+    // Save generated salt
+    std::string s(salt.begin(), salt.end());
+    Vault::writeFile("secrets.txt", s);
+    
+    return salt;
+}
+
+
+std::array<unsigned char, crypto_box_SEEDBYTES> deriveKey(const string& mpwd, const array<unsigned char, crypto_pwhash_SALTBYTES>& salt) {
+    array<unsigned char, crypto_box_SEEDBYTES> key{};
 
     // Generate key.
     if (crypto_pwhash(
-        key, sizeof key, 
+        key.data(), key.size(), 
         mpwd.data(), mpwd.length(), 
-        salt, 
+        salt.data(), 
         crypto_pwhash_OPSLIMIT_INTERACTIVE, 
         crypto_pwhash_MEMLIMIT_INTERACTIVE, 
         crypto_pwhash_ALG_DEFAULT
     ) != 0) throw runtime_error("Out of memory...");
-    cout << "key: " + binToHex(key, sizeof key) << endl;
+    cout << "key: " + binToHex(key.data(), sizeof key) << endl;
 
-    // store salt (plaintext?)
-    // return key for encryption
+    return key;
 }
