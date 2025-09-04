@@ -5,11 +5,10 @@
 # include "crypto/kdf.hpp"
 # include "storage/vault.hpp"
 
-using namespace std;
 
-string binToHex(const unsigned char* bin, size_t len) {
+std::string binToHex(const unsigned char* bin, size_t len) {
     static const char hex[] = "0123456789abcdef";
-    string s; s.resize(len*2);
+    std::string s; s.resize(len*2);
 
     for (size_t i=0; i<len; i++) {
         s[2*i] = hex[(bin[i]>>4) & 0xF];
@@ -20,12 +19,12 @@ string binToHex(const unsigned char* bin, size_t len) {
 }
 
 
-array<unsigned char, crypto_pwhash_SALTBYTES> genSalt() {
+std::array<unsigned char, crypto_pwhash_SALTBYTES> genSalt() {
     std::array<unsigned char, crypto_pwhash_SALTBYTES> salt{};
 
     // Generate salt.
     randombytes_buf(salt.data(), salt.size());
-    cout << "salt: " + binToHex(salt.data(), salt.size()) << endl;
+    std::cout << "salt: " + binToHex(salt.data(), salt.size()) << std::endl;
 
     // Save generated salt
     std::string s(salt.begin(), salt.end());
@@ -35,8 +34,8 @@ array<unsigned char, crypto_pwhash_SALTBYTES> genSalt() {
 }
 
 
-std::array<unsigned char, crypto_box_SEEDBYTES> deriveKey(const string& mpwd, const array<unsigned char, crypto_pwhash_SALTBYTES>& salt) {
-    array<unsigned char, crypto_box_SEEDBYTES> key{};
+std::array<unsigned char, crypto_box_SEEDBYTES> deriveKey(const std::string& mpwd, const std::array<unsigned char, crypto_pwhash_SALTBYTES>& salt) {
+    std::array<unsigned char, crypto_box_SEEDBYTES> key{};
 
     // Generate key.
     if (crypto_pwhash(
@@ -46,8 +45,8 @@ std::array<unsigned char, crypto_box_SEEDBYTES> deriveKey(const string& mpwd, co
         crypto_pwhash_OPSLIMIT_INTERACTIVE, 
         crypto_pwhash_MEMLIMIT_INTERACTIVE, 
         crypto_pwhash_ALG_DEFAULT
-    ) != 0) throw runtime_error("Out of memory...");
-    cout << "key: " + binToHex(key.data(), sizeof key) << endl;
+    ) != 0) throw std::runtime_error("Out of memory...");
+    std::cout << "key: " + binToHex(key.data(), sizeof key) << std::endl;
 
     return key;
 }

@@ -3,38 +3,37 @@
 # include <filesystem>
 # include "storage/vault.hpp"
 
-using namespace std;
 
-fstream Vault::file;
+std::fstream Vault::file;
 
-bool Vault::fileExists(const string& filename) {
-    return filesystem::exists(filename);
+bool Vault::fileExists(const std::string& filename) {
+    return std::filesystem::exists(filename);
 }
 
-void Vault::readFile(const string& filename) {
-    string line;
+void Vault::readFile(const std::string& filename) {
+    std::string line;
 
-    file.open(filename, ios::in);
+    file.open(filename, std::ios::in);
 
     if (!file.is_open()) {
-        throw runtime_error("Could not open " + filename);
+        throw std::runtime_error("Could not open " + filename);
     }
 
-    cout << "--- Passwords ---\n";
+    std::cout << "--- Passwords ---\n";
     while (getline(file, line)) {
-        cout << line << endl;
+        std::cout << line << std::endl;
     }
 
     file.close();
 }
 
-void Vault::writeFile(const string& filename, const string& data) {
-    file.open(filename, ios::out | ios::app);
+void Vault::writeFile(const std::string& filename, const std::string& data) {
+    file.open(filename, std::ios::out | std::ios::app);
 
     if (!file.is_open()) {
-        throw runtime_error("Could not open " + filename);
+        throw std::runtime_error("Could not open " + filename);
     }
 
-    file << data << endl;
+    file << data << std::endl;
     file.close();
 }

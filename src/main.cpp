@@ -5,48 +5,47 @@
 # include "crypto/crypto.hpp"
 # include "storage/vault.hpp"
 
-using namespace std;
 
 int main () {
     if (sodium_init() == -1) return 1;
 
     int opt;
-    string mpwd, pwd, tag, entry;
+    std::string mpwd, pwd, tag, entry;
 
-    cout << "--- Password Manager ---";
+    std::cout << "--- Password Manager ---";
 
     // Master password not defined.
     if (!Vault::fileExists("secrets.txt")) {    // <-- more verification needed
         auto salt = genSalt();
 
-        cout << "Create your master password: ";
-        cin >> mpwd;
+        std::cout << "Create your master password: ";
+        std::cin >> mpwd;
         auto key = deriveKey(mpwd, salt);
 
     } else {
         // auto salt = Vault::loadFile("secrets.txt");
-        cout << "Enter your master password: ";
-        cin >> mpwd;
+        std::cout << "Enter your master password: ";
+        std::cin >> mpwd;
 
         // try to decrypt vault
         // auto key = deriveKey(mpwd, salt);
     }
 
     while (1) {
-        cout << "\n\n1. Save passwords\n2. Read passwords\n3. Exit\n\n";
-        cin >> opt;
+        std::cout << "\n\n1. Save passwords\n2. Read passwords\n3. Exit\n\n";
+        std::cin >> opt;
 
         switch (opt) {
             // Save passwords.
             case 1:
-            cout << "Enter your tag: ";
-            cin >> tag;
-            cout << "Enter your password: ";
-            cin >> pwd;
+            std::cout << "Enter your tag: ";
+            std::cin >> tag;
+            std::cout << "Enter your password: ";
+            std::cin >> pwd;
 
             entry = tag + " : " + pwd;
             Vault::writeFile("vault.txt", entry);
-            cout << "Password saved successfuly!";
+            std::cout << "Password saved successfuly!";
             break;
 
             // Read passwords.
@@ -56,11 +55,11 @@ int main () {
 
             // Exit.
             case 3:
-            cout << "Exiting...";
+            std::cout << "Exiting...";
             return 0;
 
             default:
-            cout << "Invalid option.\n";
+            std::cout << "Invalid option.\n";
         }
     }
 
