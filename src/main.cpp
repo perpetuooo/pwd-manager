@@ -23,12 +23,12 @@ int main () {
         auto key = deriveKey(mpwd, salt);
 
     } else {
-        // auto salt = Vault::loadFile("secrets.txt");
+        auto salt = Vault::loadSalt();
         std::cout << "Enter your master password: ";
         std::cin >> mpwd;
 
         // try to decrypt vault
-        // auto key = deriveKey(mpwd, salt);
+        auto key = deriveKey(mpwd, salt);
     }
 
     while (1) {

@@ -24,11 +24,11 @@ std::array<unsigned char, crypto_pwhash_SALTBYTES> genSalt() {
 
     // Generate salt.
     randombytes_buf(salt.data(), salt.size());
-    std::cout << "salt: " + binToHex(salt.data(), salt.size()) << std::endl;
+    std::cout << "\ngenerated salt: " + binToHex(salt.data(), salt.size()) << std::endl;
 
     // Save generated salt
-    std::string s(salt.begin(), salt.end());
-    Vault::writeFile("secrets.txt", s);
+    std::ofstream out("secrets.txt", std::ios::binary);
+    out.write(reinterpret_cast<const char*>(salt.data()), salt.size());
     
     return salt;
 }
@@ -46,7 +46,7 @@ std::array<unsigned char, crypto_box_SEEDBYTES> deriveKey(const std::string& mpw
         crypto_pwhash_MEMLIMIT_INTERACTIVE, 
         crypto_pwhash_ALG_DEFAULT
     ) != 0) throw std::runtime_error("Out of memory...");
-    std::cout << "key: " + binToHex(key.data(), sizeof key) << std::endl;
+    std::cout << "generated key: " + binToHex(key.data(), sizeof key);
 
     return key;
 }
