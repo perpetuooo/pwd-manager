@@ -42,5 +42,4 @@
 
 .vscode
 build
-vault.txt
-salt.bin
+vault.enc

@@ -9,36 +9,47 @@
 # include "crypto/kdf.hpp"
 
 
+// [HEADER]
+// ----------------------------------------------------------
+// 4 bytes     magic                "VLT1" (multiple vaults?)
+// 16 bytes    salt                 crypto_pwhash_SALTBYTES
+// 12 bytes    nonce                crypto_aead_chacha20poly1305_NPUBBYTES
+// 4 bytes     verifier len         uint32_t
+// N bytes     verifier             ...
+
+// [ENTRIES]
+// ----------------------------------------------------------
+// 12 bytes    nonce                crypto_aead_chacha20poly1305_NPUBBYTES
+// 4 bytes     ciphertxt len        uint32_t
+// N bytes     ciphertxt            ...
+
+
 bool Vault::fileExists(const std::string& filename) {
     return std::filesystem::exists(filename);
 }
 
 
-std::array<unsigned char, crypto_pwhash_SALTBYTES> Vault::genSalt() {
-    std::array<unsigned char, crypto_pwhash_SALTBYTES> salt{};  
-
-    // Generate salt.
-    randombytes_buf(salt.data(), salt.size());
-    std::cout << "\ngenerated salt: " + binToHex(salt.data(), salt.size()) << std::endl;
-
+void Vault::createVaultFile(const std::array<unsigned char, crypto_pwhash_SALTBYTES>& salt, std::array<unsigned char, crypto_box_SEEDBYTES> key) {
     // Closed scope to ensure that the stream is closed before futher adjusts.
     {
-        std::ofstream out("salt.temp", std::ios::binary | std::ios::trunc);  // Write salt in a temp file first, to avoid corruption in case of errors.
-        out.write(reinterpret_cast<const char*>(salt.data()), salt.size());
-        if (!out) throw std::runtime_error("Could not create salt.temp");
-        out.write(reinterpret_cast<const char*>(salt.data()), static_cast<std::streamsize>(salt.size()));
-        if (!out) throw std::runtime_error("Write failed for salt.temp");
+        // Use a temp file first, to avoid corruption in case of errors.
+        std::ofstream out("vault.temp", std::ios::binary | std::ios::trunc);
+
+        // Write magic and salt.
+        out.write(reinterpret_cast<const char*>(salt.data()), static_cast<std::streamsize>(salt.size())); 
+
+        // Create verifier and encrypt it with the generated key.
+        
+        if (!out) throw std::runtime_error("Write failed for vault.temp");
         out.flush();
     }
 
     std::error_code ec;
-    std::filesystem::rename("salt.temp", "salt.bin", ec);
+    std::filesystem::rename("vault.temp", "vault.enc", ec);
     if (ec) {    // Delete .temp if rename failed.
-        std::filesystem::remove("salt.temp");
+        std::filesystem::remove("vault.temp");
         throw std::runtime_error("Failed to rename temp file: " + ec.message());
     }
-    
-    return salt;
 }
 
 
@@ -58,6 +69,26 @@ std::array<unsigned char, crypto_pwhash_SALTBYTES> Vault::loadSalt() {
 
     return salt;
 }
+
+
+// static std::vector<unsigned char> genVerifier() {
+
+// }
+
+
+// void appendEntry() {
+
+// }
+
+
+// void  loadEntries() {
+
+// }
+
+
+// void overwriteVault() {
+
+// }
 
 
 void Vault::readFile(const std::string& filename) {

@@ -19,6 +19,17 @@ std::string binToHex(const unsigned char* bin, size_t len) {
 }
 
 
+std::array<unsigned char, crypto_pwhash_SALTBYTES> genSalt() {
+    std::array<unsigned char, crypto_pwhash_SALTBYTES> salt{};  
+
+    // Generate salt.
+    randombytes_buf(salt.data(), salt.size());
+    std::cout << "\ngenerated salt: " + binToHex(salt.data(), salt.size()) << std::endl;
+
+    return salt;
+}
+
+
 std::array<unsigned char, crypto_box_SEEDBYTES> deriveKey(const std::string& mpwd, const std::array<unsigned char, crypto_pwhash_SALTBYTES>& salt) {
     std::array<unsigned char, crypto_box_SEEDBYTES> key{};
 
