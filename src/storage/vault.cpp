@@ -29,6 +29,33 @@ bool Vault::fileExists(const std::string& filename) {
 }
 
 
+std::fstream accessVaultFile(std::ios::openmode mode, bool temp) {
+    std::string fname = temp ? "vault.temp" : "vault.enc";
+
+    mode |= std::ios::binary;   // Always use binary mode.
+
+    if (std::filesystem::exists(fname)) {
+        auto perms = std::filesystem::status(fname).permissions();
+
+        if (((mode & std::ios::in) != 0) && ((perms & std::filesystem::perms::owner_read) == std::filesystem::perms::none)) {
+            throw std::runtime_error("No read permission for " + fname);
+        }
+
+        if (((mode & std::ios::out) != 0) && ((perms & std::filesystem::perms::owner_write) == std::filesystem::perms::none)) {
+            throw std::runtime_error("No write permission for " + fname);
+        }
+    // Reading requires the file to exist.
+    } else if ((mode & std::ios::in) != 0) {
+        throw std::runtime_error("File does not exist: " + fname);
+    }
+
+    std::fstream file(fname, mode);
+    if (!file) throw std::runtime_error("Failed to open file " + fname);
+
+    return file;
+}
+
+
 void Vault::createVaultFile(const std::array<unsigned char, crypto_pwhash_SALTBYTES>& salt, std::array<unsigned char, crypto_box_SEEDBYTES> key) {
     // Closed scope to ensure that the stream is closed before futher adjusts.
     {
