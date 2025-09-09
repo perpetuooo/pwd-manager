@@ -3,34 +3,47 @@
 # include <string>
 # include <array>
 
-# include "crypto/crypto.hpp"
+# include "crypto/kdf.hpp"
 # include "storage/vault.hpp"
 
 
 int main () {
     if (sodium_init() == -1) return 1;
 
-    int opt;
-    std::string mpwd, pwd, tag, entry;
-
+    std::string mpwd{}, mpwd2{1};
     std::cout << "--- Password Manager ---";
 
     // Master password not defined.
-    if (!Vault::fileExists("salt.bin")) {    // <-- more verification needed
-        auto salt = Vault::genSalt();
+    if (!Vault::fileExists("vault.enc")) {    // <-- more verification needed
+        auto salt = genSalt();
 
-        std::cout << "\nCreate your master password: ";
-        std::cin >> mpwd;
+        do {
+            std::cout << "\nCreate your master password: ";
+            std::cin >> mpwd;
+            std::cout << "Confirm your master password: ";
+            std::cin >> mpwd2;
+
+            if (mpwd != mpwd2) {
+                std::cout << "Passwords dont match, try again.\n";
+            }
+        } while (mpwd != mpwd2);
+        std::cout << "Master password created successfully!\n";
+
         auto key = deriveKey(mpwd, salt);
+        Vault::createVaultFile(salt, key);
 
     } else {
         auto salt = Vault::loadSalt();
         std::cout << "\nEnter your master password: ";
         std::cin >> mpwd;
 
-        // try to decrypt vault
-        auto key = deriveKey(mpwd, salt);
+        // Verify key authenticity.
+        auto key = deriveKey(mpwd, salt);   // <-- Try 3 times before lock up?
+        Vault::verifyVaultKey(key);
     }
+
+    int opt;
+    std::string pwd, tag, entry;
 
     while (1) {
         std::cout << "\n\n1. Save passwords\n2. Read passwords\n3. Exit\n\n";
