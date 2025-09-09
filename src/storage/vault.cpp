@@ -1,12 +1,13 @@
 # include <iostream>
 # include <fstream>
 # include <filesystem>
+# include <stdexcept>
 # include <string>
 # include <array>
 # include <sodium.h>
 
 # include "storage/vault.hpp"
-# include "crypto/kdf.hpp"
+# include "crypto/crypto.hpp"
 
 
 // [HEADER]
@@ -14,14 +15,14 @@
 // 4 bytes     magic                "VLT1" (multiple vaults?)
 // 16 bytes    salt                 crypto_pwhash_SALTBYTES
 // 12 bytes    nonce                crypto_aead_chacha20poly1305_NPUBBYTES
-// 4 bytes     verifier len         uint32_t
-// N bytes     verifier             ...
+// 16 bytes    verifier             randombytes_buf
 
 // [ENTRIES]
 // ----------------------------------------------------------
 // 12 bytes    nonce                crypto_aead_chacha20poly1305_NPUBBYTES
 // 4 bytes     ciphertxt len        uint32_t
-// N bytes     ciphertxt            ...
+// N bytes     ciphertxt            encrypted data
+// ...         ...                  ...
 
 
 bool Vault::fileExists(const std::string& filename) {
@@ -56,18 +57,23 @@ std::fstream accessVaultFile(std::ios::openmode mode, bool temp) {
 }
 
 
-void Vault::createVaultFile(const std::array<unsigned char, crypto_pwhash_SALTBYTES>& salt, std::array<unsigned char, crypto_box_SEEDBYTES> key) {
+void Vault::createVaultFile(const std::array<unsigned char, crypto_pwhash_SALTBYTES>& salt, std::array<unsigned char, crypto_box_SEEDBYTES>& key) {
     // Closed scope to ensure that the stream is closed before futher adjusts.
     {
         // Use a temp file first, to avoid corruption in case of errors.
-        std::ofstream out("vault.temp", std::ios::binary | std::ios::trunc);
-
-        // Write magic and salt.
-        out.write(reinterpret_cast<const char*>(salt.data()), static_cast<std::streamsize>(salt.size())); 
-
-        // Create verifier and encrypt it with the generated key.
+        auto out = accessVaultFile(std::ios::out | std::ios::trunc, true);
         
-        if (!out) throw std::runtime_error("Write failed for vault.temp");
+        // Write magic and salt.
+        out.write("VLT1", 4);
+        out.write(reinterpret_cast<const char*>(salt.data()), static_cast<std::streamsize>(salt.size())); 
+        
+        // Create verifier and encrypt it with the generated key.
+        std::array<unsigned char, 16> verifier{};
+        randombytes_buf(verifier.data(), verifier.size());
+        auto block = encrypt(verifier.data(), verifier.size(), key);
+
+        out.write(reinterpret_cast<const char*>(block.nonce.data()), static_cast<std::streamsize>(block.nonce.size()));
+        out.write(reinterpret_cast<const char*>(block.ciphertext.data()), static_cast<std::streamsize>(block.ciphertext.size()));  
         out.flush();
     }
 
@@ -80,27 +86,35 @@ void Vault::createVaultFile(const std::array<unsigned char, crypto_pwhash_SALTBY
 }
 
 
+bool Vault::verifyVaultKey(std::array<unsigned char, crypto_box_SEEDBYTES>& key) {
+    EncryptedBlock block{};
+    auto in = accessVaultFile(std::ios::in);
+
+    // Skip magic + salt and read nonce + verifier.
+    in.seekg(20, std::ios::beg);
+    in.read(reinterpret_cast<char*>(block.nonce.data()), static_cast<std::streamsize>(block.nonce.size()));
+    in.read(reinterpret_cast<char*>(block.ciphertext.data()), static_cast<std::streamsize>(block.ciphertext.size()));
+
+    auto verifier = decrypt(block, key);
+    return true;
+}
+
+
 std::array<unsigned char, crypto_pwhash_SALTBYTES> Vault::loadSalt() {
-    if (!fileExists("salt.bin")) throw std::runtime_error("Could not find salt.bin");
-
-    std::ifstream in("salt.bin", std::ios::binary);
-    if (!in) throw std::runtime_error("Could not open salt.bin");
-    
     std::array<unsigned char, crypto_pwhash_SALTBYTES> salt{};
-    in.read(reinterpret_cast<char*>(salt.data()), static_cast<std::streamsize>(salt.size()));   // Reads SALTBYTES size into the array.
+    auto in = accessVaultFile(std::ios::in);
+    
+    //Skip magic, reads SALTBYTES size into the array and returns the number of bytes read.
+    in.seekg(4, std::ios::beg);
+    in.read(reinterpret_cast<char*>(salt.data()), static_cast<std::streamsize>(salt.size()));
+    std::streamsize tbytes = in.gcount();
 
-    std::streamsize readBytes = in.gcount();    // Returns the number of bytes read on the last operation.
-    if (readBytes != static_cast<std::streamsize>(salt.size())) {   // File does not contains the same size as the original salt.
-        throw std::runtime_error("Invalid salt size in salt.bin (read " + std::to_string(readBytes) + " bytes)");
+    if (tbytes != static_cast<std::streamsize>(salt.size())) {   // File does not contains the same size as the original salt.
+        throw std::runtime_error("Invalid salt size in vault.enc (read " + std::to_string(tbytes) + " bytes)");
     }
 
     return salt;
 }
-
-
-// static std::vector<unsigned char> genVerifier() {
-
-// }
 
 
 // void appendEntry() {

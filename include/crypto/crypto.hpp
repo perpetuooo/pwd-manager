@@ -2,5 +2,6 @@
 #define CRYPTO_HPP
 
 # include "kdf.hpp"
+# include "aead.hpp"
 
 #endif
