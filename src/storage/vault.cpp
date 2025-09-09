@@ -96,7 +96,7 @@ bool Vault::verifyVaultKey(std::array<unsigned char, crypto_box_SEEDBYTES>& key)
     in.read(reinterpret_cast<char*>(block.ciphertext.data()), static_cast<std::streamsize>(block.ciphertext.size()));
 
     auto verifier = decrypt(block, key);
-    return true;
+    return !verifier.empty();
 }
 
 

@@ -2,6 +2,7 @@
 # include <sodium.h>
 # include <string>
 # include <array>
+# include <stdexcept>
 
 # include "crypto/kdf.hpp"
 # include "storage/vault.hpp"
@@ -39,7 +40,7 @@ int main () {
 
         // Verify key authenticity.
         auto key = deriveKey(mpwd, salt);   // <-- Try 3 times before lock up?
-        Vault::verifyVaultKey(key);
+        if (!Vault::verifyVaultKey(key)) throw std::runtime_error("Invalid master password...");
     }
 
     int opt;

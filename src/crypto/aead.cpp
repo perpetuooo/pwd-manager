@@ -45,7 +45,8 @@ std::vector<uint8_t> decrypt(const EncryptedBlock& block ,const std::array<unsig
         block.ciphertext.data(), block.ciphertext.size(),
         nullptr, 0,
         block.nonce.data(), key.data()) != 0) {
-            throw std::runtime_error("Decryption failed (wrong key or corrupted data)");
+            // throw std::runtime_error("Decryption failed (wrong key or corrupted data)");
+            return {};  // Return an empty vector in case of failure to handle it outside this function.
     }
 
     plaintext.resize(plaintext_len);
