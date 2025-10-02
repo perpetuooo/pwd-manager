@@ -66,7 +66,6 @@ int main () {
 
             // Read passwords.
             case 2:
-            Vault::readFile("vault.txt");
             break;
 
             // Exit.

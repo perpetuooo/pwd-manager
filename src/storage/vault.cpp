@@ -138,25 +138,3 @@ void Vault::appendEntry(const std::string& msg, std::array<unsigned char, crypto
 // void overwriteVault() {
 
 // }
-
-
-void Vault::readFile(const std::string& filename) {
-    std::ifstream in(filename);
-    if (!in) throw std::runtime_error("Could not open " + filename + " for reading");
-
-    std::cout << "--- Passwords ---\n";
-    
-    std::string line;
-    while (std::getline(in, line)) {
-        std::cout << line << '\n';
-    }
-}
-
-
-void Vault::writeFile(const std::string& filename, const std::string& data) {
-    std::ofstream out(filename, std::ios::app);
-    if (!out) throw std::runtime_error("Could not open " + filename + " for writing");
-
-    out << data << '\n';
-}
-
