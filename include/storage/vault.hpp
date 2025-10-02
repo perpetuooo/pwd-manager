@@ -15,6 +15,7 @@ public:
     static void createVaultFile(const std::array<unsigned char, crypto_pwhash_SALTBYTES>& salt, std::array<unsigned char, crypto_box_SEEDBYTES>& key);
     static bool verifyVaultKey(std::array<unsigned char, crypto_box_SEEDBYTES>& key);
     static std::array<unsigned char, crypto_pwhash_SALTBYTES> loadSalt();
+    static void appendEntry(const std::string& msg, std::array<unsigned char, crypto_box_SEEDBYTES>& key);
     static void readFile(const std::string& filename);
     static void writeFile(const std::string& filename, const std::string& data);
 };

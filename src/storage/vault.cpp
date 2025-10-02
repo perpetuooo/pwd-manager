@@ -30,7 +30,7 @@ bool Vault::fileExists(const std::string& filename) {
 }
 
 
-std::fstream accessVaultFile(std::ios::openmode mode, bool temp) {
+std::fstream Vault::accessVaultFile(std::ios::openmode mode, bool temp) {
     std::string fname = temp ? "vault.temp" : "vault.enc";
 
     mode |= std::ios::binary;   // Always use binary mode.
@@ -117,12 +117,20 @@ std::array<unsigned char, crypto_pwhash_SALTBYTES> Vault::loadSalt() {
 }
 
 
-// void appendEntry() {
+void Vault::appendEntry(const std::string& msg, std::array<unsigned char, crypto_box_SEEDBYTES>& key) {
+    auto out = accessVaultFile(std::ios::out | std::ios::app);
+    auto block = encrypt(reinterpret_cast<const unsigned char*>(msg.data()), msg.size(), key);
 
-// }
+    out.write(reinterpret_cast<const char*>(block.nonce.data()), static_cast<std::streamsize>(block.nonce.size()));
+    out.write(reinterpret_cast<const char*>(block.ciphertext.data()), static_cast<std::streamsize>(block.ciphertext.size()));  
+
+    if (out.bad()) throw std::runtime_error("Failed to write new entry.");
+    
+    out.flush();
+}
 
 
-// void  loadEntries() {
+// void loadEntries() {
 
 // }
 

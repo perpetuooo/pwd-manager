@@ -12,6 +12,7 @@ int main () {
     if (sodium_init() == -1) return 1;
 
     std::string mpwd{}, mpwd2{1};
+    std::array<unsigned char, crypto_box_SEEDBYTES> key{};  // <-- temporary use only, need to use secure mem handling
     std::cout << "--- Password Manager ---";
 
     // Master password not defined.
@@ -30,7 +31,7 @@ int main () {
         } while (mpwd != mpwd2);
         std::cout << "Master password created successfully!\n";
 
-        auto key = deriveKey(mpwd, salt);
+        key = deriveKey(mpwd, salt);
         Vault::createVaultFile(salt, key);
 
     } else {
@@ -39,7 +40,7 @@ int main () {
         std::cin >> mpwd;
 
         // Verify key authenticity.
-        auto key = deriveKey(mpwd, salt);   // <-- Try 3 times before lock up?
+        key = deriveKey(mpwd, salt);   // <-- Try 3 times before lock up?
         if (!Vault::verifyVaultKey(key)) throw std::runtime_error("Invalid master password...");
     }
 
@@ -59,7 +60,7 @@ int main () {
             std::cin >> pwd;
 
             entry = tag + " : " + pwd;
-            Vault::writeFile("vault.txt", entry);
+            Vault::appendEntry(entry, key);
             std::cout << "Password saved successfuly!";
             break;
 
